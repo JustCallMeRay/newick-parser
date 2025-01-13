@@ -2,25 +2,25 @@
 // Created by LuoFan on 2019-12-19.
 //
 
-#include "newickParser.h"
-using namespace std;
+#include "NewickParser.h"
 
-parser::parser(string newickTree, int mod) {
-    char newickTreeC[newickTree.size()+1];
-    int size,i=0;
+
+Parser::Parser(std::string newickTree, int mod) {
+    int i=0;
     treeSize=1;
-    size=newickTree.size();
-    strcpy(newickTreeC,newickTree.c_str());
-    parseOne(newickTreeC,i,size,tree,mod);
+    const auto size = newickTree.size();
+    parseOne(newickTree,i,size,tree,mod);
     int id=0;
-    this->table=new Table[this->treeSize];
+    table = std::vector<TreeNode>(size);
     nameTravel(tree, id);
     genTable(tree);
     return;
 }
-void parser::parseOne(char *newick, int &index, int end, TreeNode &node,int mod) {
+void Parser::ParseOne(const std::string& newick, int &index, int end, TreeNode &node,int mod) {
     if (newick[index]!='(')
-        cout<<"Error\n";
+    {
+        std::cout << "Error\n";
+    }
     //left child name
     node.lChild=new TreeNode;
     node.lChild->father=&node;
@@ -31,13 +31,17 @@ void parser::parseOne(char *newick, int &index, int end, TreeNode &node,int mod)
         while (newick[index]!=':') index++;//pass the number
     }
     else {
-        while (newick[index] != ':')//set name, now index to :
+        while (newick[index] != ':') { // set name, now index to :
             node.lChild->name += newick[index++];
+        }
     }
 
     //left dist
-    index++;char * startC=newick+index;
-    while(newick[index]!=',') index++;
+    index++;
+    char * startC = newick + index;
+    while(newick[index]!=',') {
+        index++;
+    }
     //endC=newick+(index-1);
     node.lDist=strtod(startC,NULL);
     node.lChild->fDist=node.lDist;
@@ -57,14 +61,16 @@ void parser::parseOne(char *newick, int &index, int end, TreeNode &node,int mod)
     }
     //right dist
     index++;startC=newick+index;
-    while(newick[index]!=')') index++;
+    while(newick[index]!=')') {
+        index++;
+    }
     //endC=newick+(index-1);
     node.rDist=strtod(startC,NULL);
     node.rChild->fDist=node.rDist;
     return;
 }
 
-void parser::nameTravel(TreeNode &node, int &ID) {
+void Parser::NameTravel(TreeNode &node, int &ID) {
     if(node.lChild!=NULL){
         nameTravel(*(node.lChild), ID);
         nameTravel(*(node.rChild), ID);
@@ -75,7 +81,7 @@ void parser::nameTravel(TreeNode &node, int &ID) {
     node.id=ID++;
     return;
 }
-void parser::genTable(TreeNode &node){
+void Parser::GenTable(TreeNode &node){
     if(node.lChild!=NULL){
         genTable(*(node.lChild));
         genTable(*(node.rChild));
